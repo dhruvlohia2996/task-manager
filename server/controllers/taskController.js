@@ -59,17 +59,10 @@ export const duplicateTask = async (req, res) => {
         const task = await Task.findById(id)
 
         const newTask = await Task.create({
-            ...task,
+            ...task.toObject(),
+            _id: undefined,
             title: task.title + " - Duplicate",
         })
-
-        newTask.team = task.team
-        newTask.subTasks = task.subTasks
-        newTask.assets = task.assets
-        newTask.priority = task.priority
-        newTask.stage = task.stage
-
-        await newTask.save()
 
         //alert users of the task
         let text = "New task has been assigned to you"
@@ -156,38 +149,29 @@ export const dashboardStatistics = async (req, res) => {
             .sort({ _id: -1 })
 
         //   group task by stage and calculate counts
-        const groupTaskks = allTasks.reduce((result, task) => {
+        const groupTasks = allTasks.reduce((result, task) => {
             const stage = task.stage
 
-            if (!result[stage]) {
-                result[stage] = 1
-            } else {
-                result[stage] += 1
-            }
+            result[stage] = (result[stage] || 0) + 1
 
             return result
         }, {})
 
-        // Group tasks by priority
-        const groupData = Object.entries(
-            allTasks.reduce((result, task) => {
-                const { priority } = task
+        // Calculate total tasks
+        const graphData = Object.entries(groupTasks).map(([name, total]) => ({
+            name,
+            total,
+        }))
 
-                result[priority] = (result[priority] || 0) + 1
-                return result
-            }, {})
-        ).map(([name, total]) => ({ name, total }))
-
-        // calculate total tasks
-        const totalTasks = allTasks?.length
-        const last10Task = allTasks?.slice(0, 10)
+        const totalTasks = allTasks.length
+        const last10Task = allTasks.slice(0, 10)
 
         const summary = {
             totalTasks,
             last10Task,
-            users: isAdmin ? users : [],
-            tasks: groupTaskks,
-            graphData: groupData,
+            users,
+            graphData,
+            tasks: groupTasks,
         }
 
         res.status(200).json({
@@ -289,11 +273,11 @@ export const updateTask = async (req, res) => {
 
         const task = await Task.findById(id)
 
-        task.title = title
-        task.date = date
-        task.priority = priority.toLowerCase()
+        task.title = title || task.title
+        task.date = date || task.date
+        task.priority = priority ? priority.toLowerCase() : task.priority
         task.assets = assets
-        task.stage = stage.toLowerCase()
+        task.stage = stage ? stage.toLowerCase() : task.stage
         task.team = team
 
         await task.save()

@@ -19,7 +19,7 @@ const ChangePassword = ({ open, setOpen }) => {
 
     const handleOnSubmit = async (data) => {
         if (data.password !== data.cpass) {
-            toast.warning("Passwords doesn't match")
+            toast.warning("Passwords do not match")
             return
         }
         try {

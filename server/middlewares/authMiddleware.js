@@ -12,6 +12,13 @@ const protectRoute = async (req, res, next) => {
                 "isAdmin email"
             )
 
+            if (!resp) {
+                return res.status(401).json({
+                    status: false,
+                    message: "User not found. Try login again.",
+                })
+            }
+
             req.user = {
                 email: resp.email,
                 isAdmin: resp.isAdmin,

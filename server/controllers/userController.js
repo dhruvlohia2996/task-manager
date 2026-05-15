@@ -63,8 +63,6 @@ export const loginUser = async (req, res) => {
         }
 
         const isMatch = await user.matchPassword(password)
-        console.log(isMatch);
-        console.log(password);
 
         if (user && isMatch) {
             createJWT(res, user._id)
@@ -86,7 +84,7 @@ export const loginUser = async (req, res) => {
 export const logoutUser = async (req, res) => {
     try {
         res.cookie("token", "", {
-            htttpOnly: true,
+            httpOnly: true,
             expires: new Date(0),
         })
 
@@ -203,7 +201,7 @@ export const changeUserPassword = async (req, res) => {
 
             res.status(201).json({
                 status: true,
-                message: `Password chnaged successfully.`,
+                message: `Password changed successfully.`,
             })
         } else {
             res.status(404).json({ status: false, message: "User not found" })

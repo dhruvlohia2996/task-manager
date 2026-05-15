@@ -16,12 +16,17 @@ const UserList = ({ setTeam, team }) => {
         setTeam(el?.map((u) => u._id))
     }
     useEffect(() => {
-        if (team?.length < 1) {
-            data && setSelectedUsers([data[0]])
-        } else {
-            setSelectedUsers(team)
+        if (data) {
+            if (team?.length > 0) {
+                // Map team IDs back to user objects
+                const users = team.map(id => data.find(u => u._id === id || u === id)).filter(Boolean);
+                setSelectedUsers(users);
+            } else if (data.length > 0) {
+                setSelectedUsers([data[0]]);
+                setTeam([data[0]._id]);
+            }
         }
-    }, [isLoading])
+    }, [isLoading, data]);
 
     return (
         <div>
@@ -56,7 +61,7 @@ const UserList = ({ setTeam, team }) => {
                                 <Listbox.Option
                                     key={index}
                                     className={({ active }) =>
-                                        `relative cursor-default select-none py-2 pl-10 pr-4. ${
+                                        `relative cursor-default select-none py-2 pl-10 pr-4 ${
                                             active
                                                 ? "bg-amber-100 text-amber-900"
                                                 : "text-gray-900"

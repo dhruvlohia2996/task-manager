@@ -34,4 +34,7 @@ const Textbox = React.forwardRef(
         )
     }
 )
+
+Textbox.displayName = "Textbox"
+
 export default Textbox
