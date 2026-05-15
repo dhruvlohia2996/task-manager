@@ -4,12 +4,12 @@
   "description": "Task Management Application",
   "main": "server/index.js",
   "scripts": {
-    "start": "node server/index.js",
+    "start": "cd server && node index.js",
     "server": "cd server && npm start",
     "client": "cd client && npm run dev",
-    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
-    "build": "cd client && npm install && npm run build",
-    "heroku-postbuild": "npm run build"
+    "install-server": "cd server && npm install",
+    "install-client": "cd client && npm install",
+    "build": "npm run install-server && cd client && npm install && npm run build"
   },
   "dependencies": {},
   "engines": {
