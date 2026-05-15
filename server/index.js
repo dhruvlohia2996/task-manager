@@ -9,6 +9,8 @@ import routes from "./routes/index.js"
 
 import path from "path"
 
+import { fileURLToPath } from "url"
+
 dotenv.config()
 
 await dbConnection()
@@ -33,13 +35,14 @@ app.use(cookieParser())
 app.use(morgan("dev"))
 app.use("/api", routes)
 
-const __dirname = path.resolve()
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 if (process.env.NODE_ENV === "production") {
-    app.use(express.static(path.join(__dirname, "/client/dist")))
+    app.use(express.static(path.join(__dirname, "../client/dist")))
 
     app.get("*", (req, res) =>
-        res.sendFile(path.resolve(__dirname, "client", "dist", "index.html"))
+        res.sendFile(path.resolve(__dirname, "..", "client", "dist", "index.html"))
     )
 } else {
     app.get("/", (req, res) => res.send("Server is running"))
