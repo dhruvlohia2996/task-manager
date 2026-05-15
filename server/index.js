@@ -13,8 +13,6 @@ import { fileURLToPath } from "url"
 
 dotenv.config()
 
-dbConnection()
-
 const PORT = process.env.PORT || 5000
 
 const app = express()
@@ -62,4 +60,7 @@ if (process.env.NODE_ENV === "production") {
 app.use(routeNotFound)
 app.use(errorHandler)
 
-app.listen(PORT, () => console.log(`Server listening on ${PORT}`))
+app.listen(PORT, () => {
+    console.log(`Server listening on ${PORT}`)
+    dbConnection()
+})

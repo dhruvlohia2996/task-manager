@@ -6,6 +6,9 @@ import Task from "../models/task.js"
 
 export const dbConnection = async () => {
     try {
+        // Disable buffering globally immediately to prevent 10s timeout hangs
+        mongoose.set("bufferCommands", false)
+
         // Try to connect to existing URI
         try {
             await mongoose.connect(process.env.MONGODB_URI, {
@@ -70,9 +73,6 @@ export const dbConnection = async () => {
                 console.log("Sample Tasks Seeded")
             }
         }
-        
-        // Disable buffering after connection is established and seeded
-        mongoose.set("bufferCommands", false)
     } catch (error) {
         console.error("Critical DB Error: ", error.message)
     }
