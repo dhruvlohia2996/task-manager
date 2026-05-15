@@ -13,7 +13,7 @@ import { fileURLToPath } from "url"
 
 dotenv.config()
 
-await dbConnection()
+dbConnection()
 
 const PORT = process.env.PORT || 5000
 
@@ -21,7 +21,18 @@ const app = express()
 
 app.use(
     cors({
-        origin: ["https://task-manager-abhi.netlify.app", "http://localhost:3000", "http://localhost:3001"],
+        origin: (origin, callback) => {
+            const allowedOrigins = [
+                "https://task-manager-abhi.netlify.app",
+                "http://localhost:3000",
+                "http://localhost:3001",
+            ]
+            if (!origin || allowedOrigins.includes(origin) || origin.includes("railway.app")) {
+                callback(null, true)
+            } else {
+                callback(new Error("Not allowed by CORS"))
+            }
+        },
         methods: ["GET", "POST", "DELETE", "PUT"],
         credentials: true,
     })
