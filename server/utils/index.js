@@ -6,12 +6,10 @@ import Task from "../models/task.js"
 
 export const dbConnection = async () => {
     try {
-        mongoose.set("bufferCommands", false)
-        
         // Try to connect to existing URI
         try {
             await mongoose.connect(process.env.MONGODB_URI, {
-                serverSelectionTimeoutMS: 2000, // Fail fast if URI is invalid
+                serverSelectionTimeoutMS: 2000,
             })
             console.log("DB connection established to remote cluster")
         } catch (remoteError) {
@@ -19,7 +17,12 @@ export const dbConnection = async () => {
             const mongod = await MongoMemoryServer.create()
             const uri = mongod.getUri()
             await mongoose.connect(uri)
-            console.log("In-Memory DB connection established at: " + uri)
+            console.log("In-Memory DB connection established")
+        }
+
+        // Final check to ensure connection is ready before any queries
+        if (mongoose.connection.readyState !== 1) {
+            throw new Error("Database connection not ready")
         }
 
         // Seed a default admin user for convenience if DB is empty
@@ -67,6 +70,9 @@ export const dbConnection = async () => {
                 console.log("Sample Tasks Seeded")
             }
         }
+        
+        // Disable buffering after connection is established and seeded
+        mongoose.set("bufferCommands", false)
     } catch (error) {
         console.error("Critical DB Error: ", error.message)
     }
