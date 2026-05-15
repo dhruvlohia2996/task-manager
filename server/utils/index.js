@@ -6,9 +6,6 @@ import Task from "../models/task.js"
 
 export const dbConnection = async () => {
     try {
-        // Disable buffering globally immediately to prevent 10s timeout hangs
-        mongoose.set("bufferCommands", false)
-
         // Try to connect to existing URI
         try {
             await mongoose.connect(process.env.MONGODB_URI, {
@@ -27,6 +24,9 @@ export const dbConnection = async () => {
         if (mongoose.connection.readyState !== 1) {
             throw new Error("Database connection not ready")
         }
+
+        // Now safe to disable buffering for runtime performance
+        mongoose.set("bufferCommands", false)
 
         // Seed a default admin user for convenience if DB is empty
         const adminExists = await User.findOne({ isAdmin: true })

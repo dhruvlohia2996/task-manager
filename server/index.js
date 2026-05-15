@@ -14,9 +14,18 @@ import { fileURLToPath } from "url"
 
 dotenv.config()
 
-const PORT = process.env.PORT || 5000
-
 const app = express()
+
+// Middleware to prevent any DB queries before the connection is ready
+app.use((req, res, next) => {
+    if (mongoose.connection.readyState !== 1 && req.path.startsWith("/api")) {
+        return res.status(503).json({
+            status: false,
+            message: "Application is starting. Please refresh in a few seconds.",
+        })
+    }
+    next()
+})
 
 app.use(
     cors({
@@ -37,23 +46,14 @@ app.use(
     })
 )
 
+const PORT = process.env.PORT || 5000
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 app.use(cookieParser())
 
 app.use(morgan("dev"))
-
-// Middleware to prevent queries before DB connection is ready
-app.use((req, res, next) => {
-    if (mongoose.connection.readyState !== 1 && req.path.startsWith("/api")) {
-        return res.status(503).json({
-            status: false,
-            message: "Database is connecting. Please refresh in a few seconds.",
-        })
-    }
-    next()
-})
 
 app.use("/api", routes)
 
