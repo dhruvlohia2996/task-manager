@@ -20,51 +20,51 @@ export const dbConnection = async () => {
             const uri = mongod.getUri()
             await mongoose.connect(uri)
             console.log("In-Memory DB connection established at: " + uri)
-            
-            // Seed a default admin user for convenience if in-memory
-            const adminExists = await User.findOne({ isAdmin: true })
-            if (!adminExists) {
-                const admin = await User.create({
-                    name: "Admin User",
-                    email: "admin@example.com",
-                    password: "password123",
-                    isAdmin: true,
-                    role: "Admin",
-                    title: "System Administrator"
-                })
-                console.log("Default Admin Seeded: admin@example.com / password123")
+        }
 
-                // Seed some sample tasks for the admin
-                const taskCount = await Task.countDocuments()
-                if (taskCount === 0) {
-                    await Task.create([
-                        {
-                            title: "Setup Project Environment",
-                            team: [admin._id],
-                            stage: "todo",
-                            priority: "high",
-                            date: new Date(),
-                            activities: [{ type: "assigned", activity: "Project setup started", by: admin._id }]
-                        },
-                        {
-                            title: "Fix Backend Proxy Issues",
-                            team: [admin._id],
-                            stage: "in progress",
-                            priority: "medium",
-                            date: new Date(),
-                            activities: [{ type: "assigned", activity: "Fixing port mismatch", by: admin._id }]
-                        },
-                        {
-                            title: "Resolve Linting Warnings",
-                            team: [admin._id],
-                            stage: "completed",
-                            priority: "low",
-                            date: new Date(),
-                            activities: [{ type: "assigned", activity: "Cleaned up ESLint errors", by: admin._id }]
-                        }
-                    ])
-                    console.log("Sample Tasks Seeded")
-                }
+        // Seed a default admin user for convenience if DB is empty
+        const adminExists = await User.findOne({ isAdmin: true })
+        if (!adminExists) {
+            const admin = await User.create({
+                name: "Admin User",
+                email: "admin@example.com",
+                password: "password123",
+                isAdmin: true,
+                role: "Admin",
+                title: "System Administrator"
+            })
+            console.log("Default Admin Seeded: admin@example.com / password123")
+
+            // Seed some sample tasks for the admin
+            const taskCount = await Task.countDocuments()
+            if (taskCount === 0) {
+                await Task.create([
+                    {
+                        title: "Setup Project Environment",
+                        team: [admin._id],
+                        stage: "todo",
+                        priority: "high",
+                        date: new Date(),
+                        activities: [{ type: "assigned", activity: "Project setup started", by: admin._id }]
+                    },
+                    {
+                        title: "Fix Backend Proxy Issues",
+                        team: [admin._id],
+                        stage: "in progress",
+                        priority: "medium",
+                        date: new Date(),
+                        activities: [{ type: "assigned", activity: "Fixing port mismatch", by: admin._id }]
+                    },
+                    {
+                        title: "Resolve Linting Warnings",
+                        team: [admin._id],
+                        stage: "completed",
+                        priority: "low",
+                        date: new Date(),
+                        activities: [{ type: "assigned", activity: "Cleaned up ESLint errors", by: admin._id }]
+                    }
+                ])
+                console.log("Sample Tasks Seeded")
             }
         }
     } catch (error) {
@@ -81,7 +81,7 @@ export const createJWT = (res, userId) => {
     res.cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV !== "development",
-        sameSite: "strict", //prevent CSRF attack
+        sameSite: process.env.NODE_ENV === "development" ? "strict" : "none",
         maxAge: 1 * 24 * 60 * 60 * 1000, //1 day
     })
 }
