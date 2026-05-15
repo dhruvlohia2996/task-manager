@@ -8,16 +8,28 @@ export const dbConnection = async () => {
     try {
         // Try to connect to existing URI
         try {
-            await mongoose.connect(process.env.MONGODB_URI, {
-                serverSelectionTimeoutMS: 2000,
+            const uri = process.env.MONGODB_URI
+            if (!uri) {
+                throw new Error("MONGODB_URI is not defined in environment variables")
+            }
+
+            await mongoose.connect(uri, {
+                serverSelectionTimeoutMS: 10000, // Increased to 10s for slower cloud clusters
             })
             console.log("DB connection established to remote cluster")
         } catch (remoteError) {
-            console.warn("Remote DB connection failed, starting In-Memory MongoDB...")
-            const mongod = await MongoMemoryServer.create()
-            const uri = mongod.getUri()
-            await mongoose.connect(uri)
-            console.log("In-Memory DB connection established")
+            console.warn("Remote DB connection failed: ", remoteError.message)
+            
+            // Only try In-Memory DB if not in production and not on a cloud platform
+            if (process.env.NODE_ENV !== "production" && !process.env.RAILWAY_STATIC_URL) {
+                console.log("Starting In-Memory MongoDB for local development...")
+                const mongod = await MongoMemoryServer.create()
+                const uri = mongod.getUri()
+                await mongoose.connect(uri)
+                console.log("In-Memory DB connection established")
+            } else {
+                throw new Error("Production DB connection failed. Please check your MONGODB_URI in Railway variables.")
+            }
         }
 
         // Final check to ensure connection is ready before any queries
