@@ -5,6 +5,7 @@ import express from "express"
 import morgan from "morgan"
 import { errorHandler, routeNotFound } from "./middlewares/errorMiddleware.js"
 import { dbConnection } from "./utils/index.js"
+import mongoose from "mongoose"
 import routes from "./routes/index.js"
 
 import path from "path"
@@ -42,6 +43,18 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 
 app.use(morgan("dev"))
+
+// Middleware to prevent queries before DB connection is ready
+app.use((req, res, next) => {
+    if (mongoose.connection.readyState !== 1 && req.path.startsWith("/api")) {
+        return res.status(503).json({
+            status: false,
+            message: "Database is connecting. Please refresh in a few seconds.",
+        })
+    }
+    next()
+})
+
 app.use("/api", routes)
 
 const __filename = fileURLToPath(import.meta.url)
