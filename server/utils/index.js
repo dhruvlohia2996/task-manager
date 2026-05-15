@@ -25,9 +25,6 @@ export const dbConnection = async () => {
             throw new Error("Database connection not ready")
         }
 
-        // Now safe to disable buffering for runtime performance
-        mongoose.set("bufferCommands", false)
-
         // Seed a default admin user for convenience if DB is empty
         const adminExists = await User.findOne({ isAdmin: true })
         if (!adminExists) {

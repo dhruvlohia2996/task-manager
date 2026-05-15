@@ -18,7 +18,9 @@ const app = express()
 
 // Middleware to prevent any DB queries before the connection is ready
 app.use((req, res, next) => {
-    if (mongoose.connection.readyState !== 1 && req.path.startsWith("/api")) {
+    const state = mongoose.connection.readyState
+    if (state !== 1 && req.path.startsWith("/api")) {
+        console.warn(`[API] Blocking request - DB State: ${state}`)
         return res.status(503).json({
             status: false,
             message: "Application is starting. Please refresh in a few seconds.",
